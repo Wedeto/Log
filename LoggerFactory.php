@@ -26,6 +26,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace WASP\Log;
 
 use Psr\Log\NullLogger;
+use WASP\Util\Hook;
 
 /**
  * This class is used by all loggers to obtain their logger
@@ -43,13 +44,13 @@ class LoggerFactory
     }
 
     /** 
-     * This function is called by all classes to obtain their logger.
+     * This function is subscribed to the WASP.Util.GetLogger hook to obtain their logger.
      */
-    public static function getLogger(array $context = array())
+    public static function getLogger(array &$context = array())
     {
         if (self::$logger_factory === null)
             return new NullLogger();
-        return self::$logger_factory->get($context);
+        return self::$logger_factory->get(array($context['class']));
     }
 
     /** 
@@ -61,3 +62,5 @@ class LoggerFactory
         return Logger::getLogger($context[0]);
     }
 }
+
+Hook::subscribe("WASP.Util.GetLogger", array(LoggerFactory::class, "getLogger"));
