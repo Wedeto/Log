@@ -46,11 +46,11 @@ class LoggerFactory
     /** 
      * This function is subscribed to the WASP.Util.GetLogger hook to obtain their logger.
      */
-    public static function getLogger(array &$context = array())
+    public static function getLogger(array $context = array())
     {
         if (self::$logger_factory === null)
             return new NullLogger();
-        return self::$logger_factory->get(array($context['class']));
+        return self::$logger_factory->get(array($context['class'] ?? "WASP.UndefinedLogger"));
     }
 
     /** 
