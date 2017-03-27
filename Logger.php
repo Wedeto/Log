@@ -26,14 +26,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace WASP\Log;
 
 use Throwable;
-use WASP\Util\Functions as WF;
+
 use Psr\Log\LogLevel;
 use Psr\Log\AbstractLogger;
+
+use WASP\Util\Functions as WF;
 
 class Logger extends AbstractLogger
 {
     private static $module_loggers = array();
-    private static $filename = '/var/log/wasp.log';
 
     private $module;
     private $level = LogLevel::DEBUG;
@@ -62,16 +63,8 @@ class Logger extends AbstractLogger
         return self::$module_loggers[$module];
     }
 
-    private function __construct($module)
+    private function __construct(string $module)
     {
-        if (is_object($module))
-        {
-            $classname = get_class($module);
-            $module = str_replace('\\', '.', $classname);
-        }
-        elseif (class_exists($module, false))
-            $module = str_replace($module, '.', $module);
-
         $this->module = $module;
     }
 
@@ -96,7 +89,7 @@ class Logger extends AbstractLogger
         return self::getLogger($parent_module);
     }
 
-    public function setLevel($lvl)
+    public function setLevel(string $lvl)
     {
         if (!isset(self::$LEVEL_NAMES[$lvl]))
             throw new \DomainException("Invalid log level: $lvl");
@@ -125,11 +118,8 @@ class Logger extends AbstractLogger
         return $this;
     }
 
-    public function log($level, $message, array $context = array())
+    public function log(string $level, $message, array $context = array())
     {
-        if (is_array($message))
-            throw new \RuntimeException("blargh");
-
         if (!isset(self::$LEVEL_NAMES[$level]))
             throw new \Psr\Log\InvalidArgumentException("Invalid log level: $level");
 
@@ -159,7 +149,7 @@ class Logger extends AbstractLogger
             $parent->log($level, $message, $context);
     }
 
-    public static function fillPlaceholders($message, $context)
+    public static function fillPlaceholders(string $message, $context)
     {
         $message = (string)$message;
         foreach ($context as $key => $value)
@@ -183,59 +173,59 @@ class Logger extends AbstractLogger
             fprintf($buf, "%s%s\n", $indent, $p);
     }
 
-    public static function logModule($level, $module, $message, array $context = array())
+    public static function logModule(string $level, $module, $message, array $context = array())
     {
         $log = self::getLogger($module);
         return $log->log($level, $message, $context);
     }
 
-    public static function getLevelNumeric($level)
+    public static function getLevelNumeric(string $level)
     {
         return isset(self::$LEVEL_NAMES[$level]) ? self::$LEVEL_NAMES[$level][0] : 0;
     }
 }
 
-function debug($module, $message, array $context = array())
+function debug(string $module, string $message, array $context = array())
 {
     Logger::logModule(LogLevel::DEBUG, $module, $message, $context);
 }
 
-function info($module, $message, array $context = array())
+function info(string $module, string $message, array $context = array())
 {
     Logger::logModule(LogLevel::INFO, $module, $message, $context);
 }
 
-function notice($module, $message, array $context = array())
+function notice(string $module, string $message, array $context = array())
 {
     Logger::logModule(LogLevel::NOTICE, $module, $message, $context);
 }
 
-function warn($module, $message, array $context = array())
+function warn(string $module, string $message, array $context = array())
 {
     Logger::logModule(LogLevel::WARN, $module, $message, $context);
 }
 
-function warning($module, $message, array $context = array())
+function warning(string $module, string $message, array $context = array())
 {
     Logger::logModule(LogLevel::WARN, $module, $message, $context);
 }
 
-function error($module, $message, array $context = array())
+function error(string $module, string $message, array $context = array())
 {
     Logger::logModule(LogLevel::ERROR, $module, $message, $context);
 }
 
-function critical($module, $message, array $context = array())
+function critical(string $module, string $message, array $context = array())
 {
     Logger::logModule(LogLevel::CRITICAL, $module, $message, $context);
 }
 
-function alert($module, $message, array $context = array())
+function alert(string $module, string $message, array $context = array())
 {
     Logger::logModule(LogLevel::ALERT, $module, $message, $context);
 }
 
-function emergency($module, $message, array $context = array())
+function emergency(string $module, string $message, array $context = array())
 {
     Logger::logModule(LogLevel::EMERGENCY, $module, $message, $context);
 }

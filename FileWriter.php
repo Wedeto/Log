@@ -26,7 +26,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace WASP\Log;
 
 use Psr\Log\LogLevel;
-use WASP\Request;
 use WASP\IO\File;
 
 class FileWriter implements LogWriterInterface
