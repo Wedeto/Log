@@ -26,7 +26,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace WASP\Log;
 
 use Psr\Log\LogLevel;
-use WASP\IO\File;
+use WASP\Util\Hook;
 
 class FileWriter implements LogWriterInterface
 {
@@ -58,8 +58,8 @@ class FileWriter implements LogWriterInterface
         $new_file = false;
         if (!$this->file)
         {
-            $f = new File($this->filename);
-            $f->touch();
+            touch($this->filename);
+            Hook::execute("WASP.IO.FileCreated", ['filename' => $this->filename]);
             $this->file = fopen($this->filename, 'a');
         }
 
