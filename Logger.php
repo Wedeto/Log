@@ -118,7 +118,7 @@ class Logger extends AbstractLogger
         return $this;
     }
 
-    public function log(string $level, $message, array $context = array())
+    public function log($level, $message, array $context = array())
     {
         if (!isset(self::$LEVEL_NAMES[$level]))
             throw new \Psr\Log\InvalidArgumentException("Invalid log level: $level");
