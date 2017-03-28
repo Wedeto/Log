@@ -26,10 +26,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace WASP\Log;
 
 /**
- * Log all output of the current script to memory, and attach a log to the end
- * of the response
+ * Log all received log entries to memory.
  */
-class DevLogger implements LogWriterInterface 
+class MemLogger implements LogWriterInterface 
 {
     /** The last constructed instance */
     protected static $instance = null;
@@ -75,7 +74,7 @@ class DevLogger implements LogWriterInterface
     }
 
     /**
-     * Get a DevLogger instance, if available
+     * Get a MemLogger instance, if available
      */
     public static function getInstance()
     {
