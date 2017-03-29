@@ -48,9 +48,21 @@ class LoggerFactory
      */
     public static function getLogger(array $context = array())
     {
+        $str = \WASP\Util\Functions::str($context);
         if (self::$logger_factory === null)
             return new NullLogger();
+
         return self::$logger_factory->get(array($context['class'] ?? "WASP.UndefinedLogger"));
+    }
+
+    /** 
+     * This function is subscribed to the WASP.Util.GetLogger hook to obtain their logger.
+     */
+    public static function getLoggerHook(array $params)
+    {
+        $resp = ['logger' => self::getLogger($params)];
+
+        return $resp;
     }
 
     /** 
@@ -59,8 +71,9 @@ class LoggerFactory
      */
     public function get(array $context = array())
     {
-        return Logger::getLogger($context[0]);
+        $logger = Logger::getLogger($context[0]);
+        return $logger;
     }
 }
 
-Hook::subscribe("WASP.Util.GetLogger", array(LoggerFactory::class, "getLogger"));
+Hook::subscribe("WASP.Util.GetLogger", array(LoggerFactory::class, "getLoggerHook"));

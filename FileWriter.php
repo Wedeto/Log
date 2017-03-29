@@ -27,6 +27,7 @@ namespace WASP\Log;
 
 use Psr\Log\LogLevel;
 use WASP\Util\Hook;
+use WASP\Util\RecursionException;
 
 class FileWriter implements LogWriterInterface
 {
@@ -59,7 +60,15 @@ class FileWriter implements LogWriterInterface
         if (!$this->file)
         {
             touch($this->filename);
-            Hook::execute("WASP.IO.FileCreated", ['filename' => $this->filename]);
+            try
+            {
+                Hook::execute("WASP.IO.FileCreated", ['filename' => $this->filename]);
+            }
+            catch (RecursionException $e)
+            {} 
+            // Ignore recursion: if and error occurs in a hook it may end up
+            // calling the file writer again, resulting in a loop.
+
             $this->file = fopen($this->filename, 'a');
         }
 
