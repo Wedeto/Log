@@ -1,6 +1,6 @@
 <?php
 /*
-This is part of WASP, the Web Application Software Platform.
+This is part of Wedeto, the WEb DEvelopment TOolkit.
 It is published under the MIT Open Source License.
 
 Copyright 2017, Egbert van der Wal
@@ -23,11 +23,11 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-namespace WASP\Log;
+namespace Wedeto\Log;
 
 use Psr\Log\LogLevel;
-use WASP\Util\Hook;
-use WASP\Util\RecursionException;
+use Wedeto\Util\Hook;
+use Wedeto\Util\RecursionException;
 
 class FileWriter implements LogWriterInterface
 {
@@ -62,7 +62,7 @@ class FileWriter implements LogWriterInterface
             touch($this->filename);
             try
             {
-                Hook::execute("WASP.IO.FileCreated", ['filename' => $this->filename]);
+                Hook::execute("Wedeto.IO.FileCreated", ['filename' => $this->filename]);
             }
             catch (RecursionException $e)
             {} 

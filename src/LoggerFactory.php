@@ -1,6 +1,6 @@
 <?php
 /*
-This is part of WASP, the Web Application Software Platform.
+This is part of Wedeto, the WEb DEvelopment TOolkit.
 It is published under the MIT Open Source License.
 
 Copyright 2017, Egbert van der Wal
@@ -23,10 +23,10 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-namespace WASP\Log;
+namespace Wedeto\Log;
 
 use Psr\Log\NullLogger;
-use WASP\Util\Hook;
+use Wedeto\Util\Hook;
 
 /**
  * This class is used by all loggers to obtain their logger
@@ -44,19 +44,19 @@ class LoggerFactory
     }
 
     /** 
-     * This function is subscribed to the WASP.Util.GetLogger hook to obtain their logger.
+     * This function is subscribed to the Wedeto.Util.GetLogger hook to obtain their logger.
      */
     public static function getLogger(array $context = array())
     {
-        $str = \WASP\Util\Functions::str($context);
+        $str = \Wedeto\Util\Functions::str($context);
         if (self::$logger_factory === null)
             return new NullLogger();
 
-        return self::$logger_factory->get(array($context['class'] ?? "WASP.UndefinedLogger"));
+        return self::$logger_factory->get(array($context['class'] ?? "Wedeto.UndefinedLogger"));
     }
 
     /** 
-     * This function is subscribed to the WASP.Util.GetLogger hook to obtain their logger.
+     * This function is subscribed to the Wedeto.Util.GetLogger hook to obtain their logger.
      */
     public static function getLoggerHook(array $params)
     {
@@ -67,7 +67,7 @@ class LoggerFactory
 
     /** 
      * The default implementation simply defers to the getLogger method
-     * of the WASP\Log\Logger class
+     * of the Wedeto\Log\Logger class
      */
     public function get(array $context = array())
     {
@@ -76,4 +76,4 @@ class LoggerFactory
     }
 }
 
-Hook::subscribe("WASP.Util.GetLogger", array(LoggerFactory::class, "getLoggerHook"));
+Hook::subscribe("Wedeto.Util.GetLogger", array(LoggerFactory::class, "getLoggerHook"));

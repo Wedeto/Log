@@ -1,6 +1,6 @@
 <?php
 /*
-This is part of WASP, the Web Application Software Platform.
+This is part of Wedeto, the WEb DEvelopment TOolkit.
 It is published under the MIT Open Source License.
 
 Copyright 2017, Egbert van der Wal
@@ -23,10 +23,10 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-namespace WASP\Log;
+namespace Wedeto\Log;
 
 use PHPUnit\Framework\TestCase;
-use WASP\Log\LogWriterInterface;
+use Wedeto\Log\LogWriterInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Psr\Log\LoggerTrait;
@@ -36,7 +36,7 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\AbstractLogger;
 
 /**
- * @covers WASP\Log\Logger
+ * @covers Wedeto\Log\Logger
  * @covers Psr\Log\LoggerInterface
  * @covers Psr\Log\LoggerTrait
  * @covers Psr\Log\AbstractLogger
@@ -49,7 +49,7 @@ class LoggerTest extends TestCase implements LogWriterInterface
 
     public function getLogger()
     {
-        $logger = Logger::getLogger('WASP.Log.Logger');
+        $logger = Logger::getLogger('Wedeto.Log.Logger');
         $logger->removeLogHandlers();
         $logger->addLogHandler($this)->setLevel(LogLevel::DEBUG);
         return $logger;
