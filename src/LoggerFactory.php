@@ -27,6 +27,7 @@ namespace Wedeto\Log;
 
 use Psr\Log\NullLogger;
 use Wedeto\Util\Hook;
+use Wedeto\Util\Dictionary;
 
 /**
  * This class is used by all loggers to obtain their logger
@@ -58,11 +59,9 @@ class LoggerFactory
     /** 
      * This function is subscribed to the Wedeto.Util.GetLogger hook to obtain their logger.
      */
-    public static function getLoggerHook(array $params)
+    public static function getLoggerHook(Dictionary $params)
     {
-        $resp = ['logger' => self::getLogger($params)];
-
-        return $resp;
+        $params['logger'] = self::getLogger($params->getAll());
     }
 
     /** 
@@ -76,4 +75,6 @@ class LoggerFactory
     }
 }
 
+// @codeCoverageIgnoreStart
 Hook::subscribe("Wedeto.Util.GetLogger", array(LoggerFactory::class, "getLoggerHook"));
+// @codeCoverageIgnoreEnd

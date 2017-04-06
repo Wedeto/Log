@@ -26,7 +26,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Wedeto\Log;
 
 use PHPUnit\Framework\TestCase;
-use Wedeto\Log\LogWriterInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Psr\Log\LoggerTrait;
@@ -37,27 +36,33 @@ use Psr\Log\AbstractLogger;
 
 /**
  * @covers Wedeto\Log\Logger
- * @covers Psr\Log\LoggerInterface
- * @covers Psr\Log\LoggerTrait
- * @covers Psr\Log\AbstractLogger
- * @covers Psr\Log\NullLogger
- * @covers Psr\Log\LoggerAwareTrait
  */
-class LoggerTest extends TestCase implements LogWriterInterface
+class LoggerTest extends TestCase implements WriterInterface
 {
     private $logs = array();
 
     public function getLogger()
     {
-        $logger = Logger::getLogger('Wedeto.Log.Logger');
-        $logger->removeLogHandlers();
-        $logger->addLogHandler($this)->setLevel(LogLevel::DEBUG);
+        $logger = Logger::getLogger($this);
+        $logger->removeLogWriters();
+        $logger->addLogWriter($this)->setLevel(LogLevel::DEBUG);
         return $logger;
     }
 
-    public function write(string $level, $message, array $context)
+    public function write(string $level, string $message, array $context)
     {
         $this->logs[] = array($level, $message, $context); 
+    }
+
+    public function setFormatter(FormatterInterface $formatter)
+    {}
+
+    public function setLevel(string $level)
+    {}
+
+    public function isLevelEnabled(string $level, int $level_num = null)
+    {
+        return true;
     }
 
     /**
@@ -78,22 +83,158 @@ class LoggerTest extends TestCase implements LogWriterInterface
 
     public function testImplements()
     {
-        $this->assertInstanceOf('Psr\Log\LoggerInterface', $this->getLogger());
+        $log = $this->getLogger();
+        $this->assertInstanceOf('Psr\Log\LoggerInterface', $log);
+        $this->assertEquals(str_replace('\\', '.', static::class), $log->getModule());
+
+        $log = Logger::getLogger("");
+        $this->assertTrue($log->isRoot());
+    }
+
+    public function testSetLogLevels()
+    {
+        $log = $this->GetLogger();
+
+        $log->setLevel(LogLevel::DEBUG);
+        $this->assertEquals(LogLevel::DEBUG, $log->getLevel());
+        $this->assertTrue($log->isLevelEnabled(LogLevel::DEBUG));
+        $this->assertTrue($log->isLevelEnabled(LogLevel::INFO));
+        $this->assertTrue($log->isLevelEnabled(LogLevel::NOTICE));
+        $this->assertTrue($log->isLevelEnabled(LogLevel::WARNING));
+        $this->assertTrue($log->isLevelEnabled(LogLevel::ERROR));
+        $this->assertTrue($log->isLevelEnabled(LogLevel::CRITICAL));
+        $this->assertTrue($log->isLevelEnabled(LogLevel::ALERT));
+        $this->assertTrue($log->isLevelEnabled(LogLevel::EMERGENCY));
+        
+        $log->setLevel(LogLevel::INFO);
+        $this->assertEquals(LogLevel::INFO, $log->getLevel());
+        $this->assertFalse($log->isLevelEnabled(LogLevel::DEBUG));
+        $this->assertTrue($log->isLevelEnabled(LogLevel::INFO));
+        $this->assertTrue($log->isLevelEnabled(LogLevel::NOTICE));
+        $this->assertTrue($log->isLevelEnabled(LogLevel::WARNING));
+        $this->assertTrue($log->isLevelEnabled(LogLevel::ERROR));
+        $this->assertTrue($log->isLevelEnabled(LogLevel::CRITICAL));
+        $this->assertTrue($log->isLevelEnabled(LogLevel::ALERT));
+        $this->assertTrue($log->isLevelEnabled(LogLevel::EMERGENCY));
+
+        $log->setLevel(LogLevel::NOTICE);
+        $this->assertEquals(LogLevel::NOTICE, $log->getLevel());
+        $this->assertFalse($log->isLevelEnabled(LogLevel::DEBUG));
+        $this->assertFalse($log->isLevelEnabled(LogLevel::INFO));
+        $this->assertTrue($log->isLevelEnabled(LogLevel::NOTICE));
+        $this->assertTrue($log->isLevelEnabled(LogLevel::WARNING));
+        $this->assertTrue($log->isLevelEnabled(LogLevel::ERROR));
+        $this->assertTrue($log->isLevelEnabled(LogLevel::CRITICAL));
+        $this->assertTrue($log->isLevelEnabled(LogLevel::ALERT));
+        $this->assertTrue($log->isLevelEnabled(LogLevel::EMERGENCY));
+
+        $log->setLevel(LogLevel::WARNING);
+        $this->assertEquals(LogLevel::WARNING, $log->getLevel());
+        $this->assertFalse($log->isLevelEnabled(LogLevel::DEBUG));
+        $this->assertFalse($log->isLevelEnabled(LogLevel::INFO));
+        $this->assertFalse($log->isLevelEnabled(LogLevel::NOTICE));
+        $this->assertTrue($log->isLevelEnabled(LogLevel::WARNING));
+        $this->assertTrue($log->isLevelEnabled(LogLevel::ERROR));
+        $this->assertTrue($log->isLevelEnabled(LogLevel::CRITICAL));
+        $this->assertTrue($log->isLevelEnabled(LogLevel::ALERT));
+        $this->assertTrue($log->isLevelEnabled(LogLevel::EMERGENCY));
+
+        $log->setLevel(LogLevel::ERROR);
+        $this->assertEquals(LogLevel::ERROR, $log->getLevel());
+        $this->assertFalse($log->isLevelEnabled(LogLevel::DEBUG));
+        $this->assertFalse($log->isLevelEnabled(LogLevel::INFO));
+        $this->assertFalse($log->isLevelEnabled(LogLevel::NOTICE));
+        $this->assertFalse($log->isLevelEnabled(LogLevel::WARNING));
+        $this->assertTrue($log->isLevelEnabled(LogLevel::ERROR));
+        $this->assertTrue($log->isLevelEnabled(LogLevel::CRITICAL));
+        $this->assertTrue($log->isLevelEnabled(LogLevel::ALERT));
+        $this->assertTrue($log->isLevelEnabled(LogLevel::EMERGENCY));
+
+        $log->setLevel(LogLevel::CRITICAL);
+        $this->assertEquals(LogLevel::CRITICAL, $log->getLevel());
+        $this->assertFalse($log->isLevelEnabled(LogLevel::DEBUG));
+        $this->assertFalse($log->isLevelEnabled(LogLevel::INFO));
+        $this->assertFalse($log->isLevelEnabled(LogLevel::NOTICE));
+        $this->assertFalse($log->isLevelEnabled(LogLevel::WARNING));
+        $this->assertFalse($log->isLevelEnabled(LogLevel::ERROR));
+        $this->assertTrue($log->isLevelEnabled(LogLevel::CRITICAL));
+        $this->assertTrue($log->isLevelEnabled(LogLevel::ALERT));
+        $this->assertTrue($log->isLevelEnabled(LogLevel::EMERGENCY));
+
+        $log->setLevel(LogLevel::ALERT);
+        $this->assertEquals(LogLevel::ALERT, $log->getLevel());
+        $this->assertFalse($log->isLevelEnabled(LogLevel::DEBUG));
+        $this->assertFalse($log->isLevelEnabled(LogLevel::INFO));
+        $this->assertFalse($log->isLevelEnabled(LogLevel::NOTICE));
+        $this->assertFalse($log->isLevelEnabled(LogLevel::WARNING));
+        $this->assertFalse($log->isLevelEnabled(LogLevel::ERROR));
+        $this->assertFalse($log->isLevelEnabled(LogLevel::CRITICAL));
+        $this->assertTrue($log->isLevelEnabled(LogLevel::ALERT));
+        $this->assertTrue($log->isLevelEnabled(LogLevel::EMERGENCY));
+
+        $log->setLevel(LogLevel::EMERGENCY);
+        $this->assertEquals(LogLevel::EMERGENCY, $log->getLevel());
+        $this->assertFalse($log->isLevelEnabled(LogLevel::DEBUG));
+        $this->assertFalse($log->isLevelEnabled(LogLevel::INFO));
+        $this->assertFalse($log->isLevelEnabled(LogLevel::NOTICE));
+        $this->assertFalse($log->isLevelEnabled(LogLevel::WARNING));
+        $this->assertFalse($log->isLevelEnabled(LogLevel::ERROR));
+        $this->assertFalse($log->isLevelEnabled(LogLevel::CRITICAL));
+        $this->assertFalse($log->isLevelEnabled(LogLevel::ALERT));
+        $this->assertTrue($log->isLevelEnabled(LogLevel::EMERGENCY));
+
+        $this->expectException(\DomainException::class);
+        $this->expectExceptionMessage("Invalid log level: TRACE");
+        $log->setLevel("TRACE");
+    }
+
+    public function testLevelEnabled()
+    {
+        $log1 = Logger::getLogger("wedeto.test");
+        $log2 = Logger::getLogger("wedeto.test.sub");
+        
+        $log2->setLevel(LogLevel::INFO);
+        $log1->setLevel(LogLevel::ERROR);
+
+        $memlog = new MemLogger(LogLevel::INFO);
+        $log2->addLogWriter($memlog);
+        $this->assertEquals([$memlog], $log2->getLogWriters());
+        $this->assertEquals([], $log1->getLogWriters());
+
+        $this->assertTrue($log2->isLevelEnabled(LogLevel::INFO));
+        $this->assertFalse($log1->isLevelEnabled(LogLevel::INFO));
+
+        $log2->removeLogWriters();
+        $this->assertEquals([], $log2->getLogWriters());
+        $this->assertFalse($log2->isLevelEnabled(LogLevel::INFO));
+
+        $log1->addLogWriter($memlog);
+        $this->assertEquals([$memlog], $log1->getLogWriters());
+        $this->assertFalse($log2->isLevelEnabled(LogLevel::INFO));
+        $this->assertFalse($log1->isLevelEnabled(LogLevel::INFO));
+
+        $log1->setLevel(LogLevel::INFO);
+        $this->assertTrue($log2->isLevelEnabled(LogLevel::INFO));
+        $this->assertTrue($log1->isLevelEnabled(LogLevel::INFO));
+        $log1->removeLogWriters();
+        $this->assertEquals([], $log1->getLogWriters());
+
+        // Should bubble up to root now
+        $this->assertFalse($log2->isLevelEnabled(LogLevel::INFO));
+        $this->assertFalse($log1->isLevelEnabled(LogLevel::INFO));
     }
 
     public function testLogsAtAllLevels()
     {
-        foreach ($this->provideLevelsAndMessages() as $msg)
+        foreach ($this->provideLevelsAndMessages() as $level => $message)
         {
-            $level = $msg[0];
-            $message = $msg[1];
             $logger = $this->getLogger();
             $logger->{$level}($message, array('user' => 'Bob'));
             $logger->log($level, $message, array('user' => 'Bob'));
 
             $expected = array(
-                $level.' message of level '.$level.' with context: Bob',
-                $level.' message of level '.$level.' with context: Bob',
+                $level.' message of level ' . $level . ' with context: Bob',
+                $level.' message of level ' . $level . ' with context: Bob',
             );
             $logs = $this->getLogs();
             $this->assertEquals($expected, $logs);
@@ -103,15 +244,30 @@ class LoggerTest extends TestCase implements LogWriterInterface
     public function provideLevelsAndMessages()
     {
         return array(
-            LogLevel::EMERGENCY => array(LogLevel::EMERGENCY, 'message of level emergency with context: {user}'),
-            LogLevel::ALERT => array(LogLevel::ALERT, 'message of level alert with context: {user}'),
-            LogLevel::CRITICAL => array(LogLevel::CRITICAL, 'message of level critical with context: {user}'),
-            LogLevel::ERROR => array(LogLevel::ERROR, 'message of level error with context: {user}'),
-            LogLevel::WARNING => array(LogLevel::WARNING, 'message of level warning with context: {user}'),
-            LogLevel::NOTICE => array(LogLevel::NOTICE, 'message of level notice with context: {user}'),
-            LogLevel::INFO => array(LogLevel::INFO, 'message of level info with context: {user}'),
-            LogLevel::DEBUG => array(LogLevel::DEBUG, 'message of level debug with context: {user}'),
+            LogLevel::EMERGENCY => 'message of level emergency with context: {user}',
+            LogLevel::ALERT => 'message of level alert with context: {user}',
+            LogLevel::CRITICAL => 'message of level critical with context: {user}',
+            LogLevel::ERROR => 'message of level error with context: {user}',
+            LogLevel::WARNING => 'message of level warning with context: {user}',
+            LogLevel::NOTICE => 'message of level notice with context: {user}',
+            LogLevel::INFO => 'message of level info with context: {user}',
+            LogLevel::DEBUG => 'message of level debug with context: {user}',
         );
+    }
+
+    public function testLogAtTooLowLevel()
+    {
+        $logger = $this->getLogger();
+        $logger->setLevel(LogLevel::ALERT);
+        
+        $this->assertFalse($logger->isLevelEnabled(LogLevel::CRITICAL));
+        $logger->log(LogLevel::CRITICAL, "Critical error");
+        $this->assertEquals([], $this->getLogs());
+
+        $logger->setLevel(LogLevel::CRITICAL);
+        $this->assertTrue($logger->isLevelEnabled(LogLevel::CRITICAL));
+        $logger->log(LogLevel::CRITICAL, "Critical error");
+        $this->assertEquals(['critical Critical error'], $this->getLogs());
     }
 
     public function testThrowsOnInvalidLevel()
@@ -170,55 +326,6 @@ class LoggerTest extends TestCase implements LogWriterInterface
         );
         $this->assertEquals($expected, $this->getLogs());
     }
-
-    public function testTrait()
-    {
-        $a = new DummyLogger(array($this, 'write'));
-        
-        foreach ($this->provideLevelsAndMessages() as $level => $msg)
-        {
-            $a->$level($msg[1], array('user' => 'Bob'));
-            $logs = $this->getLogs();
-            $this->assertEquals(
-                $logs,
-                array("${msg[0]} message of level ${msg[0]} with context: Bob")
-            );
-        }
-    }
-
-    public function testNullLogger()
-    {
-        $exception = null;
-        $a = new NullLogger;
-        foreach ($this->provideLevelsAndMessages() as $level => $msg)
-        {
-            try
-            {
-                $a->$level($msg[1], array('user' => 'Bob'));
-            }
-            catch (\Throwable $e)
-            {
-                $exception = $e;
-                throw $e;
-            }
-        }
-        $this->assertNull($exception);
-    }
-
-    public function testLoggerAware()
-    {
-        $a = new DummyLoggable();
-
-        $logger = $this->getLogger();
-        $a->test();
-
-        $this->assertEquals(array(), $this->getLogs());
-
-        $a->setLogger($logger);
-        $a->test();
-
-        $this->assertEquals(array('info ok'), $this->getLogs());
-    }
 }
 
 class DummyTest
@@ -226,33 +333,5 @@ class DummyTest
     public function __toString()
     {
         return "DUMMY";
-    }
-}
-
-class DummyLogger implements LoggerInterface
-{
-    use LoggerTrait;
-
-    private $cb;
-
-    public function __construct($callback)
-    {
-        $this->cb = $callback;
-    }
-
-    public function log($level, $message, array $context = array())
-    {
-        call_user_func($this->cb, $level, $message, $context);
-    }
-}
-
-class DummyLoggable implements LoggerAwareInterface
-{
-    use LoggerAwareTrait;
-
-    public function test()
-    {
-        if ($this->logger)
-            $this->logger->info('ok');
     }
 }

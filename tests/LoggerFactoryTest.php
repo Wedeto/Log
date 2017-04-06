@@ -25,7 +25,34 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Wedeto\Log;
 
-interface LogWriterInterface
+use PHPUnit\Framework\TestCase;
+
+use Psr\Log\LogLevel;
+use Psr\Log\NullLogger;
+
+use Wedeto\Util\Hook;
+
+/**
+ * @covers Wedeto\Log\LoggerFactory
+ */
+final class LoggerFactoryTest extends TestCase
 {
-    public function write(string $level, $msg, array $context);
+    public function testLoggerFactory()
+    {
+        $log = LoggerFactory::getLogger(['class' => $this]);
+        $this->assertInstanceOf(NullLogger::class, $log);
+
+        LoggerFactory::setLoggerFactory(new LoggerFactory);
+        $log = LoggerFactory::getLogger(['class' => $this]);
+        $this->assertInstanceOf(Logger::class, $log);
+        $this->assertEquals(str_replace('\\', '.', static::class), $log->getModule());
+    }
+
+    public function testLoggerHook()
+    {
+        $result = Hook::execute('Wedeto.Util.GetLogger', ['class' => $this, 'logger' => null]);
+        $logger = $result['logger'];
+
+        $this->assertInstanceOf(Logger::class, $logger);
+    }
 }

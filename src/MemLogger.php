@@ -28,16 +28,13 @@ namespace Wedeto\Log;
 /**
  * Log all received log entries to memory.
  */
-class MemLogger implements LogWriterInterface 
+class MemLogger extends AbstractWriter
 {
     /** The last constructed instance */
     protected static $instance = null;
 
-    /** Minimum logger level */
-    private $min_level;
-
     /** The log storage */
-    private $log = array();
+    protected $log = array();
 
     /**
      * Create the logwriter
@@ -55,13 +52,13 @@ class MemLogger implements LogWriterInterface
      * @param string $message The message
      * @param array $context The variables to fill in the message
      */
-    public function write(string $level, $message, array $context)
+    public function write(string $level, string $message, array $context)
     {
         $levnum = Logger::getLevelNumeric($level);
         if ($levnum < $this->min_level)
             return;
 
-        $message = Logger::fillPlaceholders($message, $context);
+        $message = $this->format($level, $message, $context);
         $this->log[] = sprintf("%10s: %s", strtoupper($level), $message);
     }
 

@@ -29,34 +29,69 @@ use Psr\Log\LogLevel;
 use Wedeto\Util\Hook;
 use Wedeto\Util\RecursionException;
 
-class FileWriter implements LogWriterInterface
+/** 
+ * Write log entry to a file
+ */
+class FileWriter extends AbstractWriter
 {
     private $filename;
-    private $min_level;
     private $file = null;
+    private $reopen_interval = 30;
 
+    /**
+     * Create the file writer
+     */
     public function __construct($filename, $min_level = LogLevel::DEBUG)
     {
         $this->filename = $filename;
-        $this->min_level = Logger::getLevelNumeric($min_level);
+        $this->setLevel($min_level);
+        $this->setFormatter(new PatternFormatter("[%DATE%][%MODULE%] %LEVEL%: %MESSAGE%"));
     }
 
-    public function write(string $level, $message, array $context)
+    /**
+     * Set the file reopen interval. The file will be kept open for a maximum
+     * of N seconds. When serving requests, this will not be reached, but
+     * in long running CLI tasks, this may be necessary to cope with log rotation.
+     *
+     * @param int $seconds The amount of seconds before file reopening
+     */
+    public function setReopenInterval(int $seconds)
+    {
+        $this->reopen_interval = $seconds;
+        return $this;
+    }
+
+    /**
+     * Write a log message.
+     *
+     * @param string $level The LogLevel
+     * @param string $message The message to write
+     * @param array $context The context variables
+     */
+    public function write(string $level, string $message, array $context)
     {
         $lvl_num = Logger::getLevelNumeric($level);
         if ($lvl_num < $this->min_level)
             return;
 
-        $message = Logger::fillPlaceholders($message, $context);
-        $module = isset($context['_module']) ? $context['_module'] : "";
-        $fmt = "[" . date('Y-m-d H:i:s') . '][' . $module . ']';
-        $fmt .= ' ' . strtoupper($level) . ': ' . $message;
+        $fmt = $this->format($level, $message, $context);
         $this->writeLine($fmt);
     }
 
+    /**
+     * Write a line to the log file
+     * @param string $str The line to write
+     */
     private function writeLine(string $str)
     {
-        $new_file = false;
+        $now = time();
+        if ($this->file && $this->file_opened < $now - $this->reopen_interval)
+        {
+            // Close the file after a set interval
+            fclose($this->file);
+            $this->file = null;
+        }
+
         if (!$this->file)
         {
             touch($this->filename);
@@ -64,12 +99,16 @@ class FileWriter implements LogWriterInterface
             {
                 Hook::execute("Wedeto.IO.FileCreated", ['filename' => $this->filename]);
             }
-            catch (RecursionException $e)
-            {} 
+            // @codeCoverageIgnoreStart
             // Ignore recursion: if and error occurs in a hook it may end up
             // calling the file writer again, resulting in a loop.
+            catch (RecursionException $e)
+            {} 
+            // @codeCoverageIgnoreEnd
+
 
             $this->file = fopen($this->filename, 'a');
+            $this->file_opened = time();
         }
 
         if ($this->file)

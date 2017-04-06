@@ -29,28 +29,55 @@ use Throwable;
 
 use Psr\Log\LogLevel;
 use Psr\Log\AbstractLogger;
-
 use Wedeto\Util\Functions as WF;
 
+/** 
+ * Logger implementing the PSR-3 Logger Interface standard.
+ * Wedeto\Log is a modular, hierarchical logger. It's inspired
+ * by logging systems available on Java (Logger4J, SLF4J, ...),
+ * and the native Python logger.
+ *
+ * Each class has its own logger, based on their class name and namespace.
+ * Each logger can have a different log level, and log messages bubble up to
+ * the root logger. You can attach log writers to each level to filter the
+ * messages.
+ */
 class Logger extends AbstractLogger
 {
+    /** The registered loggers */
     private static $module_loggers = array();
 
-    private $module;
-    private $level = LogLevel::DEBUG;
-    private $handlers = array();
-
-    private static $LEVEL_NAMES = array(
-        LogLevel::DEBUG => array(0, 'DEBUG'),
-        LogLevel::INFO => array(1, 'INFO'),
-        LogLevel::NOTICE => array(2, 'NOTICE'),
-        LogLevel::WARNING => array(3, 'WARNING'),
-        LogLevel::ERROR => array(4, 'ERROR'),
-        LogLevel::CRITICAL => array(5, 'CRITICAL'),
-        LogLevel::ALERT => array(6, 'ALERT'),
-        LogLevel::EMERGENCY => array(7, 'EMERGENCY')
+    /** A mapping between LogLevel constants and their order of severity */
+    private static $LEVEL_NUMERIC = array(
+        LogLevel::DEBUG     => 0,
+        LogLevel::INFO      => 1,
+        LogLevel::NOTICE    => 2,
+        LogLevel::WARNING   => 3,
+        LogLevel::ERROR     => 4,
+        LogLevel::CRITICAL  => 5,
+        LogLevel::ALERT     => 6,
+        LogLevel::EMERGENCY => 7
     );
 
+    /** The module of the current instance */
+    private $module;
+
+    /** The log level of the current instance */
+    private $level = LogLevel::DEBUG;
+
+    /** The numeric log level of the current instance */
+    private $level_num = 0;
+
+    /** The writers attached to this instance */
+    private $writers = array();
+
+    /**
+     * Get a logger for a specific module.
+     * @param mixed $module A string indicating the module,
+     *                      or a class name or object that will be
+     *                      used to find the appropriate name.
+     * @return Logger The instance for the specified module
+     */
     public static function getLogger($module = "")
     {
         if (is_object($module))
@@ -63,21 +90,37 @@ class Logger extends AbstractLogger
         return self::$module_loggers[$module];
     }
 
+    /**
+     * Create the module. Private, because it should only be called
+     * using getLogger which makes sure each module gets exactly one logger.
+     *
+     * @param string $module The name of the module
+     */
     private function __construct(string $module)
     {
         $this->module = $module;
     }
 
+    /**
+     * @return string The module of this logger
+     */
     public function getModule()
     {
         return $this->module;
     }
 
+    /**
+     * @return bool True if this is the root logger, false if not
+     */
     public function isRoot()
     {
         return empty($this->module);
     }
 
+    /**
+     * @return Logger The logger of the parent module. Null for the root
+     * logger.
+     */
     public function getParentLogger()
     {
         if ($this->module === "")
@@ -89,41 +132,98 @@ class Logger extends AbstractLogger
         return self::getLogger($parent_module);
     }
 
-    public function setLevel(string $lvl)
+    /**
+     * Set the log level for this module. Any log messages with a severity lower
+     * than this threshold will not bubble up.
+     * @param string $level The minimum log level of messages to handle
+     */
+    public function setLevel(string $level)
     {
-        if (!isset(self::$LEVEL_NAMES[$lvl]))
-            throw new \DomainException("Invalid log level: $lvl");
+        if (!defined(LogLevel::class . '::' . strtoupper($level)))
+            throw new \DomainException("Invalid log level: $level");
 
-        $this->level = $lvl;
+        $this->level = $level;
+        $this->level_num = self::$LEVEL_NUMERIC[$level];
+        return $this;
+    }
+    
+    /**
+     * @return string the level this logger is set to
+     */
+    public function getLevel()
+    {
+        return $this->level;
+    }
+
+    /**
+     * @return bool True if the level would be accepted somewhere, false if it
+     *              would be dropped
+     */
+    public function isLevelEnabled(string $level, int $level_num = null)
+    {
+        if ($level_num === null)
+            $level_num = self::$LEVEL_NUMERIC[$level];
+
+        if ($level_num < $this->level_num)
+            return false;
+
+        foreach ($this->writers as $writer)
+            if ($writer->isLevelEnabled($level, $level_num))
+                return true;
+
+        // No handler would accept it
+        $parent = $this->getParentLogger();
+        if ($parent !== null)
+            return $parent->isLevelEnabled($level, $level_num);
+
+        // Negative
+        return false;
+    }
+
+    /**
+     * Add a log handler to this module. The log handler will receive all messages
+     * passing through this logger.
+     *
+     * @param WriterInterface The log writer
+     * @return Logger Provides fluent interface
+     */
+    public function addLogWriter(WriterInterface $writer)
+    {
+        $this->writers[] = $writer;
         return $this;
     }
 
-    public function addLogHandler($handler)
+    /**
+     * @return array The list of log writers attached to this instance
+     */
+    public function getLogWriters()
     {
-        if (!($handler instanceof LogWriterInterface) && !is_callable($handler))
-            throw new \RuntimeException("Please provide a valid callback or object as LogHandler");
+        return $this->writers;
+    }
 
-        $this->handlers[] = $handler;
+    /**
+     * Removes all log writers attached to this instance
+     * @return Logger Provides fluent interface
+     */
+    public function removeLogWriters()
+    {
+        $this->writers = array();
         return $this;
     }
 
-    public function getLogHandlers()
-    {
-        return $this->handlers;
-    }
-
-    public function removeLogHandlers()
-    {
-        $this->handlers = array();
-        return $this;
-    }
-
+    /**
+     * The log() call logs a message for this module.
+     *
+     * @param string $level The LogLevel for this message
+     * @param string $mesage The message to log
+     * @param array $context The context - can be used to format the message
+     */
     public function log($level, $message, array $context = array())
     {
-        if (!isset(self::$LEVEL_NAMES[$level]))
+        if (!defined(LogLevel::class . '::' . strtoupper($level)))
             throw new \Psr\Log\InvalidArgumentException("Invalid log level: $level");
 
-        if (self::$LEVEL_NAMES[$level][0] < self::$LEVEL_NAMES[$this->level][0])
+        if (self::$LEVEL_NUMERIC[$level] < self::$LEVEL_NUMERIC[$this->level])
             return;
 
         if (!isset($context['_module']))
@@ -132,24 +232,23 @@ class Logger extends AbstractLogger
         if (!isset($context['_level']))
             $context['_level'] = $level;
 
-        foreach ($this->handlers as $handler)
-        {
-            if ($handler instanceof LogWriterInterface)
-            {
-                $handler->write($level, $message, $context);
-            }
-            else
-            {
-                call_user_func($handler, $level, $message, $context);
-            }
-        }
+        foreach ($this->writers as $writer)
+            $writer->write($level, $message, $context);
 
+        // Bubble up to parent loggers
         $parent = $this->getParentLogger();
         if ($parent)
             $parent->log($level, $message, $context);
     }
 
-    public static function fillPlaceholders(string $message, $context)
+    /**
+     * Fill the place holders in the message with values from the context array
+     * @param string $message The message to format. Any {var} placeholders will be replaced
+     *                        with a value from the context array.
+     * @param array $context Contains the values to replace the placeholders with.
+     * @return string The message with placeholders replaced
+     */
+    public static function fillPlaceholders(string $message, array $context)
     {
         $message = (string)$message;
         foreach ($context as $key => $value)
@@ -159,65 +258,22 @@ class Logger extends AbstractLogger
             while (($pos = strpos($message, $placeholder)) !== false)
             {
                 $strval = $strval ?: WF::str($value);
-                $message = substr($message, 0, $pos) . $strval . substr($message, $pos + strlen($placeholder));
+                $message = 
+                    substr($message, 0, $pos) 
+                    . $strval 
+                    . substr($message, $pos + strlen($placeholder));
             }
         }
         return $message;
     }
 
-    public static function logModule(string $level, $module, $message, array $context = array())
-    {
-        $log = self::getLogger($module);
-        return $log->log($level, $message, $context);
-    }
-
+    /**
+     * Get the severity number for a specific LogLevel.
+     * @param string $level The LogLevel to convert to a number
+     * @return int The severity - 0 is less important, 7 is most important.
+     */
     public static function getLevelNumeric(string $level)
     {
-        return isset(self::$LEVEL_NAMES[$level]) ? self::$LEVEL_NAMES[$level][0] : 0;
+        return isset(self::$LEVEL_NUMERIC[$level]) ? self::$LEVEL_NUMERIC[$level] : 0;
     }
-}
-
-function debug(string $module, string $message, array $context = array())
-{
-    Logger::logModule(LogLevel::DEBUG, $module, $message, $context);
-}
-
-function info(string $module, string $message, array $context = array())
-{
-    Logger::logModule(LogLevel::INFO, $module, $message, $context);
-}
-
-function notice(string $module, string $message, array $context = array())
-{
-    Logger::logModule(LogLevel::NOTICE, $module, $message, $context);
-}
-
-function warn(string $module, string $message, array $context = array())
-{
-    Logger::logModule(LogLevel::WARN, $module, $message, $context);
-}
-
-function warning(string $module, string $message, array $context = array())
-{
-    Logger::logModule(LogLevel::WARN, $module, $message, $context);
-}
-
-function error(string $module, string $message, array $context = array())
-{
-    Logger::logModule(LogLevel::ERROR, $module, $message, $context);
-}
-
-function critical(string $module, string $message, array $context = array())
-{
-    Logger::logModule(LogLevel::CRITICAL, $module, $message, $context);
-}
-
-function alert(string $module, string $message, array $context = array())
-{
-    Logger::logModule(LogLevel::ALERT, $module, $message, $context);
-}
-
-function emergency(string $module, string $message, array $context = array())
-{
-    Logger::logModule(LogLevel::EMERGENCY, $module, $message, $context);
 }
