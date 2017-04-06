@@ -165,14 +165,6 @@ class Logger extends AbstractLogger
         return $message;
     }
 
-    public static function printIndent($buf, string $text, int $indent = 4)
-    {
-        $parts = explode("\n", $text);
-        $indent = str_repeat(' ', $indent);
-        foreach ($parts as $p)
-            fprintf($buf, "%s%s\n", $indent, $p);
-    }
-
     public static function logModule(string $level, $module, $message, array $context = array())
     {
         $log = self::getLogger($module);
