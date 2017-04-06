@@ -43,6 +43,7 @@ class MemLogger extends AbstractWriter
     public function __construct(string $level)
     {
         $this->min_level = Logger::getLevelNumeric($level);
+        $this->setFormatter(new PatternFormatter("%LEVEL%: %MESSAGE%"));
         self::$instance = $this;
     }
 
@@ -58,8 +59,9 @@ class MemLogger extends AbstractWriter
         if ($levnum < $this->min_level)
             return;
 
-        $message = $this->format($level, $message, $context);
-        $this->log[] = sprintf("%10s: %s", strtoupper($level), $message);
+        $lvl = sprintf("%10s", $level);
+        $message = $this->format($lvl, $message, $context);
+        $this->log[] = $message; //sprintf("%10s: %s", strtoupper($level), $message);
     }
 
     /**

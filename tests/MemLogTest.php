@@ -49,14 +49,14 @@ class MemLoggerTest extends TestCase
         $log->info("Foobar");
 
         $actual = $memlog->getLog();
-        $expected = ['      INFO: Foobar'];
+        $expected = ['Foobar'];
         $this->assertEquals($expected, $actual);
 
         $memlog->setLevel(LogLevel::ERROR);
         $log->info("Foobar2");
 
         $actual = $memlog->getLog();
-        $expected = ['      INFO: Foobar'];
+        $expected = ['Foobar'];
         $this->assertEquals($expected, $actual);
     }
 
@@ -150,7 +150,7 @@ class MemLoggerTest extends TestCase
         $log = new MemLogger(LogLevel::DEBUG);
 
         $actual = $log->format(LogLevel::INFO, "Foo", ['user' => 'john']);
-        $expected = "Foo";
+        $expected = "INFO: Foo";
         $this->assertEquals($expected, $actual);
 
         $fmt = new PatternFormatter("--%MESSAGE%--");
