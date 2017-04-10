@@ -23,9 +23,12 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-namespace Wedeto\Log;
+namespace Wedeto\Log\Writer;
 
 use Psr\Log\LogLevel;
+
+use Wedeto\Log\Formatter\FormatterInterface;
+use Wedeto\Log\Logger;
 
 /**
  * Implement the basic facilities for a writer

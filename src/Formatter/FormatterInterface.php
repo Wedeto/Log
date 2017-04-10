@@ -23,32 +23,9 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-namespace Wedeto\Log;
+namespace Wedeto\Log\Formatter;
 
-use PHPUnit\Framework\TestCase;
-use Psr\Log\LogLevel;
-
-/**
- * @covers Wedeto\Log\PatternFormatter
- */
-final class PatternFormatterTest extends TestCase
+interface FormatterInterface
 {
-    public function testFormatter()
-    {
-        $fmt = new PatternFormatter("[%DATE%][%MODULE%][%LEVEL%] %MESSAGE%");
-
-        $dt = date(\DateTime::ATOM);
-        $actual = $fmt->format(LogLevel::ERROR, "Foo", ['_module' => 'PFTest']);
-        $expected = "[$dt][PFTest][ERROR] Foo";
-        $this->assertEquals($expected, $actual);
-    }
-
-    public function testFormatterWithOtherDateFormat()
-    {
-        $fmt = new PatternFormatter("[%DATE%][%MODULE%][%LEVEL%] %MESSAGE%", \DateTime::COOKIE);
-        $dt = date(\DateTime::COOKIE);
-        $actual = $fmt->format(LogLevel::ERROR, "Foo", ['_module' => 'PFTest']);
-        $expected = "[$dt][PFTest][ERROR] Foo";
-        $this->assertEquals($expected, $actual);
-    }
+    public function format(string $level, string $msg, array $context);
 }

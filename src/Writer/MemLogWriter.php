@@ -23,12 +23,15 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-namespace Wedeto\Log;
+namespace Wedeto\Log\Writer;
+
+use Wedeto\Log\Logger;
+use Wedeto\Log\Formatter\PatternFormatter;
 
 /**
  * Log all received log entries to memory.
  */
-class MemLogger extends AbstractWriter
+class MemLogWriter extends AbstractWriter
 {
     /** The last constructed instance */
     protected static $instance = null;
@@ -73,7 +76,7 @@ class MemLogger extends AbstractWriter
     }
 
     /**
-     * Get a MemLogger instance, if available
+     * Get a MemLogWriter instance, if available
      */
     public static function getInstance()
     {

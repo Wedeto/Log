@@ -29,7 +29,9 @@ use Throwable;
 
 use Psr\Log\LogLevel;
 use Psr\Log\AbstractLogger;
+
 use Wedeto\Util\Functions as WF;
+use Wedeto\Log\Writer\WriterInterface;
 
 /** 
  * Logger implementing the PSR-3 Logger Interface standard.

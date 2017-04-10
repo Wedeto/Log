@@ -23,7 +23,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-namespace Wedeto\Log;
+namespace Wedeto\Log\Writer;
 
 use PHPUnit\Framework\TestCase;
 
@@ -31,9 +31,11 @@ use Psr\Log\LogLevel;
 use Psr\Log\AbstractLogger;
 use Psr\Log\LoggerInterface;
 
+use Wedeto\Log\Logger;
+
 /**
- * @covers Wedeto\Log\ExternalLogWriter
- * @covers Wedeto\Log\AbstractWriter
+ * @covers Wedeto\Log\Writer\ExternalLogWriter
+ * @covers Wedeto\Log\Writer\AbstractWriter
  */
 final class ExternalLogWriterTest extends TestCase
 {

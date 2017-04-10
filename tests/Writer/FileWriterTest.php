@@ -23,7 +23,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-namespace Wedeto\Log;
+namespace Wedeto\Log\Writer;
 
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
@@ -33,8 +33,8 @@ use org\bovigo\vfs\vfsStreamWrapper;
 use org\bovigo\vfs\vfsStreamDirectory;
 
 /**
- * @covers Wedeto\Log\FileWriter
- * @covers Wedeto\Log\AbstractWriter
+ * @covers Wedeto\Log\Writer\FileWriter
+ * @covers Wedeto\Log\Writer\AbstractWriter
  */
 final class FileWriterTest extends TestCase
 {

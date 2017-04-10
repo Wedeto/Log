@@ -34,6 +34,10 @@ use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\AbstractLogger;
 
+use Wedeto\Log\Formatter\FormatterInterface;
+use Wedeto\Log\Writer\WriterInterface;
+use Wedeto\Log\Writer\MemLogWriter;
+
 /**
  * @covers Wedeto\Log\Logger
  */
@@ -196,7 +200,7 @@ class LoggerTest extends TestCase implements WriterInterface
         $log2->setLevel(LogLevel::INFO);
         $log1->setLevel(LogLevel::ERROR);
 
-        $memlog = new MemLogger(LogLevel::INFO);
+        $memlog = new MemLogWriter(LogLevel::INFO);
         $log2->addLogWriter($memlog);
         $this->assertEquals([$memlog], $log2->getLogWriters());
         $this->assertEquals([], $log1->getLogWriters());

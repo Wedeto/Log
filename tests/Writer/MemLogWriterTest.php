@@ -23,27 +23,30 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-namespace Wedeto\Log;
+namespace Wedeto\Log\Writer;
 
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 
+use Wedeto\Log\Logger;
+use Wedeto\Log\Formatter\PatternFormatter;
+
 /**
- * @covers Wedeto\Log\MemLogger
- * @covers Wedeto\Log\AbstractWriter
+ * @covers Wedeto\Log\Writer\MemLogWriter
+ * @covers Wedeto\Log\Writer\AbstractWriter
  */
-class MemLoggerTest extends TestCase
+class MemLogWriterTest extends TestCase
 {
     public function testMemLog()
     {
         $log = Logger::getLogger('wedeto.test');
         $log->removeLogWriters();
 
-        $memlog = new MemLogger(LogLevel::DEBUG);
-        $this->assertEquals($memlog, MemLogger::getInstance());
+        $memlog = new MemLogWriter(LogLevel::DEBUG);
+        $this->assertEquals($memlog, MemLogWriter::getInstance());
 
         $fmt = new PatternFormatter("%MESSAGE%");
-        $this->assertInstanceOf(MemLogger::class, $memlog->setFormatter($fmt));
+        $this->assertInstanceOf(MemLogWriter::class, $memlog->setFormatter($fmt));
 
         $log->addLogWriter($memlog);
         $log->info("Foobar");
@@ -62,7 +65,7 @@ class MemLoggerTest extends TestCase
 
     public function testSetLogLevels()
     {
-        $log = new MemLogger(LogLevel::DEBUG);
+        $log = new MemLogWriter(LogLevel::DEBUG);
 
         $log->setLevel(LogLevel::DEBUG);
         $this->assertTrue($log->isLevelEnabled(LogLevel::DEBUG));
@@ -147,7 +150,7 @@ class MemLoggerTest extends TestCase
     
     public function testFormat()
     {
-        $log = new MemLogger(LogLevel::DEBUG);
+        $log = new MemLogWriter(LogLevel::DEBUG);
 
         $actual = $log->format(LogLevel::INFO, "Foo", ['user' => 'john']);
         $expected = "INFO: Foo";

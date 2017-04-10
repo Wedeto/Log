@@ -23,11 +23,14 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-namespace Wedeto\Log;
+namespace Wedeto\Log\Writer;
 
 use Psr\Log\LogLevel;
 use Wedeto\Util\Hook;
 use Wedeto\Util\RecursionException;
+
+use Wedeto\Log\Logger;
+use Wedeto\Log\Formatter\PatternFormatter;
 
 /** 
  * Write log entry to a file
