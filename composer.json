@@ -11,6 +11,9 @@
     "require-dev": {
         "mikey179/vfsStream": "~1"
     },
+    "provide": {
+        "Psr/Log": "1.0.*"
+    },
     "autoload": {
         "psr-4": {
             "Wedeto\\Log\\": "src/"
