@@ -51,4 +51,14 @@ final class PatternFormatterTest extends TestCase
         $expected = "[$dt][PFTest][ERROR] Foo";
         $this->assertEquals($expected, $actual);
     }
+
+    public function testFormatterWithPlaceholders()
+    {
+        $fmt = new PatternFormatter("[%DATE%][%MODULE%][%LEVEL%] %MESSAGE%");
+
+        $dt = date(\DateTime::ATOM);
+        $actual = $fmt->format(LogLevel::ERROR, "Foo {bar}", ['bar' => 'baz', '_module' => 'PFTest']);
+        $expected = "[$dt][PFTest][ERROR] Foo baz";
+        $this->assertEquals($expected, $actual);
+    }
 }

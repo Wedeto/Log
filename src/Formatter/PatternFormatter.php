@@ -25,6 +25,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Wedeto\Log\Formatter;
 
+use Wedeto\Log\Logger;
+
 class PatternFormatter implements FormatterInterface
 {
     protected $format;
@@ -60,7 +62,7 @@ class PatternFormatter implements FormatterInterface
         $search = [
             '%MODULE%' => $context['_module'] ?? "",
             '%LEVEL%' => strtoupper($level),
-            '%MESSAGE%' => $message,
+            '%MESSAGE%' => Logger::fillPlaceholders($message, $context),
             '%DATE%' => date($this->date_format)
         ];
 
