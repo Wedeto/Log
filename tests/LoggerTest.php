@@ -330,6 +330,16 @@ class LoggerTest extends TestCase implements WriterInterface
         );
         $this->assertEquals($expected, $this->getLogs());
     }
+
+    public function testReplacePlaceHolderWithPlaceHolderDoesntLoopIndefinitely()
+    {
+        $msg = "My {0} placeholder string";
+        $context = [0 => 'another {0} placeholder'];
+
+        $actual = Logger::fillPlaceholders($msg, $context);
+        $expected = "My another {0} placeholder placeholder string";
+        $this->assertEquals($expected, $actual);
+    }
 }
 
 class DummyTest

@@ -257,13 +257,15 @@ class Logger extends AbstractLogger
         {
             $placeholder = '{' . $key . '}';
             $strval = null;
-            while (($pos = strpos($message, $placeholder)) !== false)
+            $pos = 0;
+            while (($pos = strpos($message, $placeholder, $pos)) !== false)
             {
                 $strval = $strval ?: WF::str($value);
                 $message = 
                     substr($message, 0, $pos) 
                     . $strval 
                     . substr($message, $pos + strlen($placeholder));
+                $pos = $pos + strlen($strval);
             }
         }
         return $message;
