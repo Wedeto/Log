@@ -69,6 +69,11 @@ class LoggerTest extends TestCase implements WriterInterface
         return true;
     }
 
+    public function tearDown()
+    {
+        Logger::resetGlobalState();
+    }
+
     /**
      * This must return the log messages in order.
      * The simple formatting of the messages is: "<LOG LEVEL> <MESSAGE>".

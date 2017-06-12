@@ -93,6 +93,19 @@ class Logger extends AbstractLogger
     }
 
     /**
+     * This method will reset all global state in the Logger object.
+     * It will remove all writers from all loggers and then remove all
+     * loggers. Note that this will not remove existing logger instances
+     * from other objects - this is why the writers are removed.
+     */
+    public static function resetGlobalState()
+    {
+        foreach (self::$module_loggers as $logger)
+            $logger->removeLogWriters();
+        self::$module_loggers = [];
+    }
+
+    /**
      * Create the module. Private, because it should only be called
      * using getLogger which makes sure each module gets exactly one logger.
      *
