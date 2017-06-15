@@ -100,7 +100,7 @@ class FileWriter extends AbstractWriter
             touch($this->filename);
             try
             {
-                Hook::execute("Wedeto.IO.FileCreated", ['filename' => $this->filename]);
+                Hook::execute("Wedeto.IO.FileCreated", ['path' => $this->filename]);
             }
             // @codeCoverageIgnoreStart
             // Ignore recursion: if and error occurs in a hook it may end up
