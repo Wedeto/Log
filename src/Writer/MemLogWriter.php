@@ -76,6 +76,15 @@ class MemLogWriter extends AbstractWriter
     }
 
     /**
+     * Remove all og entries from the logger
+     * @return MemLogWriter Provides fluent interface
+     */
+    public function clear()
+    {
+        $this->log = [];
+    }
+
+    /**
      * Get a MemLogWriter instance, if available
      */
     public static function getInstance()

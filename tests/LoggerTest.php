@@ -345,6 +345,37 @@ class LoggerTest extends TestCase implements WriterInterface
         $expected = "My another {0} placeholder placeholder string";
         $this->assertEquals($expected, $actual);
     }
+
+    public function testLoggerHierarchyLevels()
+    {
+        $root = Logger::getLogger();
+        $writer = new MemLogWriter(LogLevel::DEBUG);
+        $root->addLogWriter($writer);
+
+        $root->setLevel(LogLevel::INFO);
+
+        Logger::setAcceptMode(Logger::MODE_ACCEPT_MOST_SPECIFIC);
+        $lower_level = Logger::getLogger('Test.Foo.Bar');
+        $lower_level->setLevel(LogLevel::DEBUG);
+
+        $lower_level->info('info-message');
+        $lower_level->debug('debug-message');
+
+        $log = $writer->getLog();
+        $this->assertEquals(2, count($log));
+        $this->assertContains('info-message', $log[0]);
+        $this->assertContains('debug-message', $log[1]);
+
+        Logger::setAcceptMode(Logger::MODE_ACCEPT_MOST_GENERIC);
+        $writer->clear();
+
+        $lower_level->info('info-message');
+        $lower_level->debug('debug-message');
+
+        $log = $writer->getLog();
+        $this->assertEquals(1, count($log));
+        $this->assertContains('info-message', $log[0]);
+    }
 }
 
 class DummyTest

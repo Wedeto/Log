@@ -65,14 +65,14 @@ final class ExternalLogWriterTest extends TestCase
 
         $expected_msg = "Foo {bar}";
         $expected_context = [
-            ['bar' => 'baz', '_module' => 'foo.bar', '_level' => 'debug'],
-            ['bar' => 'baz', '_module' => 'foo.bar', '_level' => 'info'],
-            ['bar' => 'baz', '_module' => 'foo.bar', '_level' => 'notice'],
-            ['bar' => 'baz', '_module' => 'foo.bar', '_level' => 'warning'],
-            ['bar' => 'baz', '_module' => 'foo.bar', '_level' => 'error'],
-            ['bar' => 'baz', '_module' => 'foo.bar', '_level' => 'critical'],
-            ['bar' => 'baz', '_module' => 'foo.bar', '_level' => 'alert'],
-            ['bar' => 'baz', '_module' => 'foo.bar', '_level' => 'emergency']
+            ['bar' => 'baz', '_module' => 'foo.bar', '_accept' => 'foo.bar', '_level' => 'debug'],
+            ['bar' => 'baz', '_module' => 'foo.bar', '_accept' => 'foo.bar', '_level' => 'info'],
+            ['bar' => 'baz', '_module' => 'foo.bar', '_accept' => 'foo.bar', '_level' => 'notice'],
+            ['bar' => 'baz', '_module' => 'foo.bar', '_accept' => 'foo.bar', '_level' => 'warning'],
+            ['bar' => 'baz', '_module' => 'foo.bar', '_accept' => 'foo.bar', '_level' => 'error'],
+            ['bar' => 'baz', '_module' => 'foo.bar', '_accept' => 'foo.bar', '_level' => 'critical'],
+            ['bar' => 'baz', '_module' => 'foo.bar', '_accept' => 'foo.bar', '_level' => 'alert'],
+            ['bar' => 'baz', '_module' => 'foo.bar', '_accept' => 'foo.bar', '_level' => 'emergency']
         ];
         
         $msg = array_shift($logs);

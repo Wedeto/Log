@@ -46,8 +46,17 @@ use Wedeto\Log\Writer\WriterInterface;
  */
 class Logger extends AbstractLogger
 {
+    /** MODE_ACCEPT_MOST_SPECIFIC: the most specific logger can accept the message */
+    const MODE_ACCEPT_MOST_SPECIFIC = 1;
+
+    /** MODE_ACCEPT_MOST_GENERIC: the most generic logger can accept the message */
+    const MODE_ACCEPT_MOST_GENERIC = 2;
+
     /** The registered loggers */
     private static $module_loggers = array();
+
+    /** The acceptance mode */
+    private static $accept_mode = Logger::MODE_ACCEPT_MOST_SPECIFIC;
 
     /** A mapping between LogLevel constants and their order of severity */
     private static $LEVEL_NUMERIC = array(
@@ -65,7 +74,7 @@ class Logger extends AbstractLogger
     private $module;
 
     /** The log level of the current instance */
-    private $level = LogLevel::DEBUG;
+    private $level = null;
 
     /** The numeric log level of the current instance */
     private $level_num = 0;
@@ -103,6 +112,38 @@ class Logger extends AbstractLogger
         foreach (self::$module_loggers as $logger)
             $logger->removeLogWriters();
         self::$module_loggers = [];
+        self::$accept_mode = self::MODE_ACCEPT_MOST_SPECIFIC;
+    }
+
+    /** 
+     * Set the accept mode of the logger structure. This will determine how messages are
+     * accepted and bubbled. There are two modes:
+     *y
+     * Logger::MODE_ACCEPT_MOST_SPECIFIC - This will honour the decision made by the most specific
+     *                                     logger for a message. If a logger accepts the message because
+     *                                     its level is equal to or higher than the loggers level,
+     *                                     parents will also accept and bubble up the message.
+     * Logger::MODE_ACCEPT_MOST_GENERIC  - This will leave the decision to the most specific logger
+     *                                     that has a verdict. If any logger decides to reject it,
+     *                                     none of its ancestors will receive the message.
+     *
+     * In both cases, whether the message is actually written depends on the log level of the writer.
+     */
+    public static function setAcceptMode(int $mode)
+    {
+        if ($mode !== self::MODE_ACCEPT_MOST_SPECIFIC && $mode !== self::MODE_ACCEPT_MOST_GENERIC)
+            throw new \InvalidArgumentException("Invalid accept mode: " . $mode);
+
+        self::$accept_mode = $mode;
+    }
+
+    /**
+     * @return int the current accept mode of the logger:
+     * Logger::MODE_ACCEPT_MOST_SPECIFIC or Logger::MODE_ACCEPT_MOST_GENERIC
+     */
+    public static function getAcceptMode()
+    {
+        return self::$accept_mode;
     }
 
     /**
@@ -179,14 +220,25 @@ class Logger extends AbstractLogger
         if ($level_num === null)
             $level_num = self::$LEVEL_NUMERIC[$level];
 
-        if ($level_num < $this->level_num)
+        if (
+            self::$accept_mode === self::MODE_ACCEPT_MOST_GENERIC && 
+            $this->level !== null && $level_num < $this->level_num
+        )
+        {
+            // This logger rejects it, so it will not be handlded anyway in GENERIC mode
             return false;
+        }
 
-        foreach ($this->writers as $writer)
-            if ($writer->isLevelEnabled($level, $level_num))
-                return true;
+        if ($this->level !== null && $level_num >= $this->level_num)
+        {
+            // This logger would not reject the message, check if any writer
+            // would accept it.
+            foreach ($this->writers as $writer)
+                if ($writer->isLevelEnabled($level, $level_num))
+                    return true;
+        }
 
-        // No handler would accept it
+        // No writer accepts it directly, delegate to parents
         $parent = $this->getParentLogger();
         if ($parent !== null)
             return $parent->isLevelEnabled($level, $level_num);
@@ -238,8 +290,30 @@ class Logger extends AbstractLogger
         if (!defined(LogLevel::class . '::' . strtoupper($level)))
             throw new \Psr\Log\InvalidArgumentException("Invalid log level: $level");
 
-        if (self::$LEVEL_NUMERIC[$level] < self::$LEVEL_NUMERIC[$this->level])
-            return;
+        if ($this->level_num === null && $this->level !== null)
+            $this->level_num = self::LEVEL_NUMERIC[$this->level];
+
+        $level_num = self::$LEVEL_NUMERIC[$level];
+
+        if (
+            $this->level !== null &&
+            $level_num < $this->level_num
+        )
+        {
+            // This logger is configured to reject this message. In mode GENERIC,
+            // the message will be dropped. In mode SPECIFIC, it depends on wether
+            // a more specific logger has already accepted the message.
+            if (self::$accept_mode === self::MODE_ACCEPT_MOST_GENERIC || !isset($context['_accept']))
+                return;
+        }
+
+        if ($this->level !== null && $level_num >= $this->level_num && !isset($context['_accept']))
+        {
+            // This logger is configured to accept this message. Store the logger that made
+            // this decision to inform parent loggers that it has been accepted. In accept mode
+            // SPECIFIC, this will instruct parents not to reject it.
+            $context['_accept'] = $this->module;
+        }
 
         if (!isset($context['_module']))
             $context['_module'] = $this->module;
