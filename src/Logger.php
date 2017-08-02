@@ -61,13 +61,21 @@ class Logger extends AbstractLogger
     /** A mapping between LogLevel constants and their order of severity */
     private static $LEVEL_NUMERIC = array(
         LogLevel::DEBUG     => 0,
+        "DEBUG"             => 0,
         LogLevel::INFO      => 1,
+        "INFO"              => 1,
         LogLevel::NOTICE    => 2,
+        "NOTICE"            => 2,
         LogLevel::WARNING   => 3,
+        "WARNING"           => 3,
         LogLevel::ERROR     => 4,
+        "ERROR"             => 4,
         LogLevel::CRITICAL  => 5,
+        "CRITICAL"          => 5,
         LogLevel::ALERT     => 6,
-        LogLevel::EMERGENCY => 7
+        "ALERT"             => 6,
+        LogLevel::EMERGENCY => 7,
+        "EMERGENCY"         => 7
     );
 
     /** The module of the current instance */
