@@ -44,6 +44,11 @@ class StreamWriter extends AbstractWriter
      */
     public function __construct($stream, $min_level = LogLevel::DEBUG)
     {
+        if ($stream === "STDOUT")
+            $stream = PHP_SAPI === "cli" ? STDOUT : fopen('php://output', 'w');
+        elseif ($stream === "STDERR")
+            $stream = PHP_SAPI === "cli" ? STDERR : fopen('php://output', 'w');
+
         if (!is_resource($stream))
             throw new \InvalidArgumentException("Provide a stream to write to");
 
