@@ -99,10 +99,10 @@ class Logger extends AbstractLogger
      */
     public static function getLogger($module = "")
     {
-        if (empty($module) || strtoupper($module) === "ROOT")
-            $module = "";
-        elseif (is_object($module))
+        if (is_object($module))
             $module = get_class($module);
+        elseif (empty($module) || strtoupper($module) === "ROOT")
+            $module = "";
         $module = trim(str_replace('\\', '.', $module), ". \\");
 
         if (!isset(self::$module_loggers[$module]))
