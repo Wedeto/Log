@@ -61,7 +61,7 @@ class LoggerFactory
      */
     public static function getLoggerHook(Dictionary $params)
     {
-        $params['logger'] = self::getLogger($params->getAll());
+        $params['logger'] = self::getLogger($params->toArray());
     }
 
     /** 
