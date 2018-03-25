@@ -128,14 +128,11 @@ class Logger extends AbstractLogger
     /** 
      * Set the accept mode of the logger structure. This will determine how messages are
      * accepted and bubbled. There are two modes:
-     *y
-     * Logger::MODE_ACCEPT_MOST_SPECIFIC - This will honour the decision made by the most specific
-     *                                     logger for a message. If a logger accepts the message because
-     *                                     its level is equal to or higher than the loggers level,
-     *                                     parents will also accept and bubble up the message.
-     * Logger::MODE_ACCEPT_MOST_GENERIC  - This will leave the decision to the most specific logger
-     *                                     that has a verdict. If any logger decides to reject it,
-     *                                     none of its ancestors will receive the message.
+     *
+     * Logger::MODE_ACCEPT_MOST_SPECIFIC - The most specific logger to accept the message has the final say,
+     *                                     once accepted, any more generic loggers will not reject it.
+     * Logger::MODE_ACCEPT_MOST_GENERIC  - Any logger can reject messages, regardless of if more specific
+     *                                     loggers have already accepted the message. 
      *
      * In both cases, whether the message is actually written depends on the log level of the writer.
      */
@@ -235,7 +232,7 @@ class Logger extends AbstractLogger
             $this->level !== null && $level_num < $this->level_num
         )
         {
-            // This logger rejects it, so it will not be handlded anyway in GENERIC mode
+            // This logger rejects it, so it will not be handled anyway in GENERIC mode
             return false;
         }
 
@@ -311,7 +308,7 @@ class Logger extends AbstractLogger
         )
         {
             // This logger is configured to reject this message. In mode GENERIC,
-            // the message will be dropped. In mode SPECIFIC, it depends on wether
+            // the message will be dropped. In mode SPECIFIC, it depends on whether
             // a more specific logger has already accepted the message.
             if (self::$accept_mode === self::MODE_ACCEPT_MOST_GENERIC || !isset($context['_accept']))
                 return;
