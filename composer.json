@@ -5,7 +5,7 @@
     "homepage": "https://wedeto.net/",
     "require": {
         "psr/log": "1.0.*",
-        "wedeto/util": "~1.0.0-beta1",
+        "wedeto/util": "~1.0.0",
         "php": ">=7.0.0"
     },
     "require-dev": {
